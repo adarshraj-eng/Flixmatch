@@ -204,14 +204,20 @@ app.get('/api/ott', async (req, res) => {
   }
 })
 
-// ── Serve React build in production ───────────────────────────────────
-if (process.env.NODE_ENV === 'production') {
+// ── Serve React build in production (non-serverless deploys only) ─────
+if (process.env.NODE_ENV === 'production' && !process.env.VERCEL) {
   app.use(express.static(path.join(__dirname, '../dist')))
   app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '../dist/index.html'))
   })
 }
 
-app.listen(PORT, () => {
-  console.log(`FlickMatch server running on http://localhost:${PORT}`)
-})
+// On Vercel, api/index.js imports this app as a serverless function
+// instead of calling listen().
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`FlickMatch server running on http://localhost:${PORT}`)
+  })
+}
+
+export default app
